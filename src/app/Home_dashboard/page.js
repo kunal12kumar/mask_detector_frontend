@@ -1,6 +1,11 @@
 // In this we will add the section to upload the image and all get the results
+"use client"
 import React, { useState, useRef } from 'react';
 import { Upload, Camera, Users, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
+import axios from 'axios';
+import { ToastContainer ,toast  } from 'react-toastify';
+
+
 
 export default function MaskDetectionApp() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -44,6 +49,46 @@ export default function MaskDetectionApp() {
     }
   };
 
+  // function to post the image and video to the backend
+
+  const handelpostingimageandvideo= async ()=>{
+    console.log("Hello world")
+
+    if (!selectedImage) {
+      toast.error('image not uploaded successfully')
+      
+    }
+
+    const formdata=new FormData()  // this is the built in function in which create key value pair for the data which we append inn this
+
+    formdata.append("file" , selectedImage)  //adding the selectedImage and with the name of file 
+
+    try {
+
+      // not writinng the code to send the images 
+
+      const response= await axios.post('https://mask-detector-backend.onrender.com/',formdata ,{
+        headers:{
+          'Content-Type':"multipart/form-data"
+        }
+        
+      })
+
+      console.log(response)
+      console.log(response.data)
+      console.log(response.data.message)
+      toast.success('Upload successful!');
+      
+    } catch (error) {
+      console.log(error)
+      toast.error('Something went wrong');
+      
+    }
+
+
+
+  }
+
   const processImage = async () => {
     if (!selectedImage) return;
 
@@ -82,7 +127,8 @@ export default function MaskDetectionApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <ToastContainer></ToastContainer>
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -143,13 +189,13 @@ export default function MaskDetectionApp() {
                   </div>
                   <div className="flex justify-center space-x-4">
                     <button
-                      onClick={processImage}
+                      onClick={()=>handelpostingimageandvideo()}
                       disabled={isProcessing}
                       className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
                     >
                       {isProcessing ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          <div  className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                           <span>Processing...</span>
                         </>
                       ) : (
