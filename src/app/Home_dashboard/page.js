@@ -67,12 +67,7 @@ export default function MaskDetectionApp() {
 
       // not writinng the code to send the images 
 
-      const response= await axios.post('https://mask-detector-backend.onrender.com/detect/image',formdata ,{
-        headers:{
-          'Content-Type':"multipart/form-data"
-        }
-        
-      })
+      const response= await axios.post('https://mask-detector-backend.onrender.com/detect/image',formdata)
 
       console.log(response)
       console.log(response.data)
