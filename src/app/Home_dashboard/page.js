@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Camera, Users, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
 import axios from 'axios';
-import { ToastContainer ,toast  } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 
 
 
@@ -49,35 +49,76 @@ export default function MaskDetectionApp() {
     }
   };
 
+  // this is the function to check whether model is get loaded or not 
+  const checkModelStatus = async () => {
+    try {
+      const response = await fetch('https://mask-detector-backend.onrender.com/health');
+      const data = await response.json();
+      return data.model_loaded;
+    } catch (error) {
+      console.error('Error checking model status:', error);
+      return false;
+    }
+  };
+
+  // this is the function to increase the time to wait to send the request to till 2 min
+
+
+  const waitForModelToLoad = async (maxWaitTime = 120000) => {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < maxWaitTime) {
+      const modelLoaded = await checkModelStatus();
+      if (modelLoaded) {
+        return true;
+      }
+
+      console.log('Model still loading, waiting...');
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+    }
+
+    return false;
+  };
+
+
+
   // function to post the image and video to the backend
 
-  const handelpostingimageandvideo= async ()=>{
+  const handelpostingimageandvideo = async () => {
     console.log("Hello world")
+
+    console.log('Checking if model is loaded...');
+    const modelReady = await waitForModelToLoad();
+
+    if (!modelReady) {
+      toast.error('Model is taking too long to load. Please try again later.');
+      return;
+    }
 
     if (!selectedImage) {
       toast.error('image not uploaded successfully')
-      
+
     }
 
-    const formdata=new FormData()  // this is the built in function in which create key value pair for the data which we append inn this
+    const formdata = new FormData()  // this is the built in function in which create key value pair for the data which we append inn this
 
-    formdata.append("file" , selectedImage)  //adding the selectedImage and with the name of file 
+    formdata.append("file", selectedImage)  //adding the selectedImage and with the name of file 
 
     try {
 
       // not writinng the code to send the images 
 
-      const response= await axios.post('https://mask-detector-backend.onrender.com/detect/image',formdata)
+      const response = await axios.post('https://mask-detector-backend.onrender.com/detect/image', formdata)
 
       console.log(response)
       console.log(response.data)
       console.log(response.data.message)
       toast.success('Upload successful!');
-      
+
     } catch (error) {
       console.log(error)
       toast.error('Something went wrong');
-      
+
     }
 
 
@@ -88,12 +129,12 @@ export default function MaskDetectionApp() {
     if (!selectedImage) return;
 
     setIsProcessing(true);
-    
+
     // Simulate API call - replace with your actual API endpoint
     try {
       // Mock processing delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Mock results - replace with actual API response
       const mockResults = {
         totalPeople: 5,
@@ -101,7 +142,7 @@ export default function MaskDetectionApp() {
         withoutMask: 2,
         processedImageUrl: imagePreview // In real app, this would be the processed image from API
       };
-      
+
       setResults(mockResults);
       setProcessedImage(mockResults.processedImageUrl);
     } catch (error) {
@@ -150,7 +191,7 @@ export default function MaskDetectionApp() {
                 <Upload className="w-5 h-5 mr-2 text-blue-600" />
                 Upload Image
               </h2>
-              
+
               {!imagePreview ? (
                 <div
                   className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer"
@@ -184,13 +225,13 @@ export default function MaskDetectionApp() {
                   </div>
                   <div className="flex justify-center space-x-4">
                     <button
-                      onClick={()=>handelpostingimageandvideo()}
+                      onClick={() => handelpostingimageandvideo()}
                       disabled={isProcessing}
                       className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
                     >
                       {isProcessing ? (
                         <>
-                          <div  className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                           <span>Processing...</span>
                         </>
                       ) : (
